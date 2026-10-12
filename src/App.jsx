@@ -277,6 +277,9 @@ export default function App() {
       const el = document.documentElement
       el.dataset.theme = th
       el.style.colorScheme = th
+      let cs = document.querySelector('meta[name="color-scheme"]')
+      if (!cs) { cs = document.createElement('meta'); cs.name = 'color-scheme'; document.head.appendChild(cs) }
+      cs.content = S.theme === 'system' ? 'light dark' : th
       const bg = th === 'dark' ? '#0b0d17' : '#f4f5f9'
       el.style.backgroundColor = bg
       document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
