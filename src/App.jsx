@@ -70,24 +70,42 @@ function ConfirmSheet({ q, onOk, onClose }) {
 
 function Auth() {
   const { t, set, S } = useApp()
+  const [mode, setMode] = useState('login') // 'login' | 'signup'
   const [email, setEmail] = useState('')
   const [pw, setPw] = useState('')
-  const go = async (up) => {
-    const c = { email, password: pw }
-    const { error } = up ? await supabase.auth.signUp(c) : await supabase.auth.signInWithPassword(c)
-    if (error) alert(error.message); else if (up) alert(t.signupOk)
+  const [pw2, setPw2] = useState('')
+  const [busy, setBusy] = useState(false)
+  const up = mode === 'signup'
+  const switchTo = (m) => { setMode(m); setPw(''); setPw2('') }
+  const submit = async (e) => {
+    e.preventDefault()
+    if (up) {
+      if (pw.length < 6) return alert(t.pwShort)
+      if (pw !== pw2) return alert(t.pwMis)
+    }
+    setBusy(true)
+    const c = { email: email.trim(), password: pw }
+    const { data, error } = up ? await supabase.auth.signUp(c) : await supabase.auth.signInWithPassword(c)
+    setBusy(false)
+    if (error) return alert(error.message)
+    if (up && !data.session) { alert(t.signupOk); switchTo('login') }
   }
   return (
-    <div className="page" style={{ marginTop: 70 }}>
+    <div className="page" style={{ marginTop: 50 }} key={mode}>
       <h1>💰 Bütçem</h1>
-      <div className="glass card">
-        <input placeholder={t.email} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input placeholder={t.pw} type="password" value={pw} onChange={(e) => setPw(e.target.value)} />
+      <p className="mu" style={{ margin: '-8px 4px 16px' }}>{t.tagline}</p>
+      <form className="glass card" onSubmit={submit}>
+        <h3 style={{ color: 'var(--tx)', fontSize: 18 }}>{up ? t.createT : t.welcome}</h3>
+        <input placeholder={t.email} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input placeholder={t.pw} type="password" autoComplete={up ? 'new-password' : 'current-password'} required value={pw} onChange={(e) => setPw(e.target.value)} />
+        {up && <input placeholder={t.pw2} type="password" autoComplete="new-password" required value={pw2} onChange={(e) => setPw2(e.target.value)} />}
         <div style={{ height: 8 }} />
-        <button className="btn" onClick={() => go(false)}>{t.login}</button>
-        <div style={{ height: 8 }} />
-        <button className="btn g" onClick={() => go(true)}>{t.signup}</button>
-      </div>
+        <button className="btn" type="submit" disabled={busy}>{busy ? t.busy : up ? t.signup : t.login}</button>
+      </form>
+      <p className="mu" style={{ textAlign: 'center' }}>
+        {up ? t.haveAcc : t.noAcc}{' '}
+        <button type="button" className="lnk" onClick={() => switchTo(up ? 'login' : 'signup')}>{up ? t.login : t.signup}</button>
+      </p>
       <Seg opts={Object.entries(LANGS)} val={S.lang} on={(k) => set({ lang: k })} />
     </div>
   )
@@ -254,7 +272,17 @@ export default function App() {
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
-    const apply = () => { document.documentElement.dataset.theme = S.theme === 'system' ? (mq.matches ? 'dark' : 'light') : S.theme }
+    const apply = () => {
+      const th = S.theme === 'system' ? (mq.matches ? 'dark' : 'light') : S.theme
+      const el = document.documentElement
+      el.dataset.theme = th
+      el.style.colorScheme = th
+      const bg = th === 'dark' ? '#0b0d17' : '#f4f5f9'
+      el.style.backgroundColor = bg
+      document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.remove())
+      const m = document.createElement('meta'); m.name = 'theme-color'; m.content = bg; document.head.appendChild(m)
+      try { localStorage.setItem('butce_theme_bg', th) } catch {}
+    }
     apply(); mq.addEventListener('change', apply)
     return () => mq.removeEventListener('change', apply)
   }, [S.theme])
