@@ -163,7 +163,7 @@ function Main({ session }) {
     <>
       <div className="page" key={tab}>
         {tab === 'home' && <>
-          <h1>{t.hello}, {uname} 👋</h1>
+          <h1>{t.hello}, {uname} ☺︎</h1> 
           <div className="glass card">
             <div className="mu">{t.left}</div>
             <div className="big" style={{ color: col }}>{fm(left)}</div>
@@ -245,7 +245,7 @@ function Main({ session }) {
             <div className="mu">{t.lang}</div>
             <Seg opts={Object.entries(LANGS)} val={S.lang} on={(k) => set({ lang: k })} />
             <div className="mu">{t.theme}</div>
-            <Seg opts={[['system', t.system], ['light', '☀️ ' + t.light], ['dark', '🌙 ' + t.dark]]} val={S.theme} on={(k) => set({ theme: k })} />
+            <Seg opts={[['system', '⏣ ' + t.system], ['light', '☯ ' + t.light], ['dark', '⏾ ' + t.dark]]} val={S.theme} on={(k) => set({ theme: k })} />
             <div className="mu">{t.cur}</div>
             <Seg opts={Object.entries(CURS).map(([k, s]) => [k, `${s} ${k}`])} val={S.cur} on={(k) => set({ cur: k })} />
             <div className="mu">{t.curNote}</div>
